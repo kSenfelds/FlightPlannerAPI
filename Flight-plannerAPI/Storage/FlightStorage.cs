@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Flight_plannerAPI.Models;
 
 namespace Flight_plannerAPI.Storage
@@ -13,10 +12,7 @@ namespace Flight_plannerAPI.Storage
         private static int _id = 1;
         public static Flight  GetFlight(int id)
         {
-            lock (Lock)
-            {
-                return _flights.SingleOrDefault(f => f.Id == id);
-            }
+            return _flights.SingleOrDefault(f => f.Id == id);
         }
 
         public static Airport [] GetAirport(string phrase)
@@ -47,11 +43,9 @@ namespace Flight_plannerAPI.Storage
             {
                 if (IsValidFlight(flight) && !FlightExists(flight))
                 {
-
                     flight.Id = _id++;
                     _flights.Add(flight);
                     return flight;
-
                 }
 
                 if (FlightExists(flight))
