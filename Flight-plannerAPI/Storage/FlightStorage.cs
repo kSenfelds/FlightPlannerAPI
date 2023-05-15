@@ -8,7 +8,7 @@ namespace Flight_plannerAPI.Storage
     public static class  FlightStorage
     {
         private static List<Flight> _flights  = new List<Flight>();
-        private static readonly object Lock = new object();
+        private static readonly object _lock = new object();
         private static int _id = 1;
         public static Flight  GetFlight(int id)
         {
@@ -31,7 +31,7 @@ namespace Flight_plannerAPI.Storage
 
         public static bool FlightExists(Flight flight)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 return _flights.Exists(f => f.From.AirportCode == flight.From.AirportCode && f.To.AirportCode == flight.To.AirportCode && f.DepartureTime == flight.DepartureTime);
             }
@@ -39,7 +39,7 @@ namespace Flight_plannerAPI.Storage
 
         public static Flight AddFlight(Flight flight)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 if (IsValidFlight(flight) && !FlightExists(flight))
                 {
@@ -66,7 +66,7 @@ namespace Flight_plannerAPI.Storage
 
         public static void DeleteFlight(int id)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 var flight = _flights.SingleOrDefault(f => f.Id == id);
                 _flights.Remove(flight);
@@ -75,7 +75,7 @@ namespace Flight_plannerAPI.Storage
 
         public static bool IsValidFlight(Flight flight)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 if (flight == null || flight.From == null || flight.To == null)
                 {
