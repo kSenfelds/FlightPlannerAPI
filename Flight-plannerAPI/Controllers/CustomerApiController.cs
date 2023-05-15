@@ -26,7 +26,7 @@ namespace Flight_plannerAPI.Controllers
               bool isValid = FlightStorage.IsValidSearch(search);
               if (isValid)
               {
-                  var result = FlightStorage.SearcFlights(search);
+                  var result = FlightStorage.SearchFlights(search);
                   
                   return Ok(result);
               }

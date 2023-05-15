@@ -9,11 +9,11 @@ namespace Flight_plannerAPI.Storage
     public static class  FlightStorage
     {
         private static List<Flight> _flights  = new List<Flight>();
-        private static readonly object lockFlights = new object();
+        private static readonly object Lock = new object();
         private static int _id = 1;
         public static Flight  GetFlight(int id)
         {
-            lock (lockFlights)
+            lock (Lock)
             {
                 return _flights.SingleOrDefault(f => f.Id == id);
             }
@@ -21,8 +21,7 @@ namespace Flight_plannerAPI.Storage
 
         public static Airport [] GetAirport(string phrase)
         {
-            
-            var airports = _flights.SelectMany(f => new[] {f.From, f.To}).ToList();
+            var airports = _flights.SelectMany(f => new[] { f.From, f.To }).ToList();
             if (string.IsNullOrEmpty(phrase))
             {
                 return airports.ToArray();
@@ -33,30 +32,37 @@ namespace Flight_plannerAPI.Storage
 
             return result;
         }
+
+        public static bool FlightExists(Flight flight)
+        {
+            lock (Lock)
+            {
+                return _flights.Exists(f => f.From.AirportCode == flight.From.AirportCode && f.To.AirportCode == flight.To.AirportCode && f.DepartureTime == flight.DepartureTime);
+            }
+        }
+
         public static Flight AddFlight(Flight flight)
         {
-            
-                if (_flights.Exists(f => f.From.AirportCode == flight.From.AirportCode
-                                         && f.To.AirportCode == flight.To.AirportCode
-                                         && f.DepartureTime == flight.DepartureTime))
+            lock (Lock)
+            {
+                if (IsValidFlight(flight) && !FlightExists(flight))
+                {
+
+                    flight.Id = _id++;
+                    _flights.Add(flight);
+                    return flight;
+
+                }
+
+                if (FlightExists(flight))
                 {
                     flight.Id = -1;
                     return flight;
                 }
 
-                lock (lockFlights)
-                {
-                    if (IsValidFlight(flight))
-                    {
-                        flight.Id = _id++;
-                        _flights.Add(flight);
-                        return flight;
-                    }
-                }
-
                 flight.Id = 0;
                 return flight;
-            
+            }
         }
 
         public static void Clear()
@@ -64,18 +70,18 @@ namespace Flight_plannerAPI.Storage
             _flights.Clear();
         }
 
-        public static bool DeleteFlight(int id)
+        public static void DeleteFlight(int id)
         {
-            var flight = _flights.SingleOrDefault(f => f.Id == id);
-            lock (lockFlights)
+            lock (Lock)
             {
-                return _flights.Remove(flight);
+                var flight = _flights.SingleOrDefault(f => f.Id == id);
+                _flights.Remove(flight);
             }
         }
 
         public static bool IsValidFlight(Flight flight)
         {
-            lock (lockFlights)
+            lock (Lock)
             {
                 if (flight == null || flight.From == null || flight.To == null)
                 {
@@ -98,8 +104,7 @@ namespace Flight_plannerAPI.Storage
 
                 if (
                     flight.To.AirportCode.ToLower() == flight.From.AirportCode.ToLower()
-                    || flight.To.City.ToLower() == flight.From.City.ToLower()
-                    || flight.To.Country.ToLower() == flight.From.Country.ToLower())
+                    || flight.To.City.ToLower() == flight.From.City.ToLower())
                 {
                     return false;
                 }
@@ -107,8 +112,7 @@ namespace Flight_plannerAPI.Storage
                 DateTime departure = Convert.ToDateTime(flight.DepartureTime);
                 DateTime arrival = Convert.ToDateTime(flight.ArrivalTime);
 
-                if (
-                    departure >= arrival)
+                if (departure >= arrival)
                 {
                     return false;
                 }
@@ -117,15 +121,15 @@ namespace Flight_plannerAPI.Storage
             }
         }
 
-        public static SearchModel SearcFlights(SearchRequest search)
+        public static SearchModel SearchFlights(SearchRequest search)
         {
             SearchModel result = new SearchModel();
 
             result.Items = _flights.Where(f =>
                 (f.From.AirportCode == search.From && f.To.AirportCode == search.To &&
-                f.DepartureTime == search.DepartureDate)
-                ||(f.From.City == search.From && f.To.City == search.To &&
-                f.DepartureTime == search.DepartureDate)
+                 f.DepartureTime == search.DepartureDate)
+                || (f.From.City == search.From && f.To.City == search.To &&
+                    f.DepartureTime == search.DepartureDate)
                 || (f.From.Country == search.From && f.To.Country == search.To &&
                     f.DepartureTime == search.DepartureDate)).ToArray();
             result.TotalItems = result.Items.Length;

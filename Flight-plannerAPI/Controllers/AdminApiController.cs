@@ -1,4 +1,5 @@
-﻿using Flight_plannerAPI.Models;
+﻿using System.Threading;
+using Flight_plannerAPI.Models;
 using Flight_plannerAPI.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,8 +10,11 @@ namespace Flight_plannerAPI.Controllers
     [Route("admin-api")]
     [ApiController]
     [Authorize]
+    
     public class AdminApiController : ControllerBase
     {
+        private static readonly object Lock = new object();
+
         [HttpGet]
         [Route("flights/{id}")]
         public IActionResult GetFlights(int id)
@@ -25,16 +29,18 @@ namespace Flight_plannerAPI.Controllers
         [Route("flights")]
         public IActionResult AddFlight(Flight flight)
         {
-            var currentFlight = FlightStorage.AddFlight(flight);
-            if (currentFlight.Id == 0)
-                return BadRequest("Wrong values entered");
-            if (currentFlight.Id == -1)
+            lock (Lock)
             {
-                return Conflict();
-            }
+                var currentFlight = FlightStorage.AddFlight(flight);
+                if (currentFlight.Id == 0)
+                    return BadRequest("Wrong values entered");
+                if (currentFlight.Id == -1)
+                {
+                    return Conflict();
+                }
 
-            return Created("", flight);
-            
+                return Created("", flight);
+            }
         }
 
         [HttpDelete]
@@ -42,13 +48,14 @@ namespace Flight_plannerAPI.Controllers
         public IActionResult DeleteFlight(int id)
         {
            var flight = FlightStorage.GetFlight(id);
+           
             if (flight != null)
             {
                 FlightStorage.DeleteFlight(flight.Id);
                 return Ok();
             }
-
-            return Ok();
+           
+           return Ok();
         }
     }
 }
