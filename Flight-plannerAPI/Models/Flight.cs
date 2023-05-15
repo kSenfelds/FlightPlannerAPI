@@ -10,13 +10,4 @@
         public string ArrivalTime { get; set; }
 
     }
-
-    /*
-     *  id: number;
-  from: Airport;
-  to: Airport;
-  carrier: string;
-  departureTime: Date;
-  arrivalTime: Date;
-     */
 }

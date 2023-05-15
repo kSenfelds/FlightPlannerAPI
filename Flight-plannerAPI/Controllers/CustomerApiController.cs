@@ -1,8 +1,6 @@
 ﻿using Flight_plannerAPI.Models;
 using Flight_plannerAPI.Storage;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Flight_plannerAPI.Controllers
 {
@@ -32,7 +30,6 @@ namespace Flight_plannerAPI.Controllers
               }
 
               return BadRequest();
-              
         }
 
         [HttpGet]

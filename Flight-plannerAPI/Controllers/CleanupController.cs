@@ -1,5 +1,4 @@
 ﻿using Flight_plannerAPI.Storage;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Flight_plannerAPI.Controllers
