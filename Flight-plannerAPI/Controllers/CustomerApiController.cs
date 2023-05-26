@@ -58,11 +58,11 @@ namespace Flight_plannerAPI.Controllers
 
             result.Items = _context.Flights.Include(f => f.From).Include(f=> f.To).Where(f =>
                 (f.From.AirportCode == search.From && f.To.AirportCode == search.To &&
-                 f.DepartureTime == search.DepartureDate)
+                 f.DepartureTime.Substring(0, 11) == search.DepartureDate)
                 || (f.From.City == search.From && f.To.City == search.To &&
-                    f.DepartureTime == search.DepartureDate)
+                    f.DepartureTime.Substring(0, 11) == search.DepartureDate)
                 || (f.From.Country == search.From && f.To.Country == search.To &&
-                    f.DepartureTime == search.DepartureDate)).ToArray();
+                    f.DepartureTime.Substring(0, 11) == search.DepartureDate)).ToArray();
             result.TotalItems = result.Items.Length;
             result.Page = 0;
 

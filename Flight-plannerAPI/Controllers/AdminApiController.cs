@@ -13,7 +13,7 @@ namespace Flight_plannerAPI.Controllers
     
     public class AdminApiController : BaseApiController
     {
-        private readonly object _lock = new object();
+        private static readonly object _lock = new object();
         public AdminApiController(FlightPlannerDbContext context) : base(context)
         {
         }
@@ -36,13 +36,11 @@ namespace Flight_plannerAPI.Controllers
         {
             if (!IsValidFlight(flight))
                 return BadRequest();
-
             lock (_lock)
             {
                 if (FlightExists(flight))
                     return Conflict();
 
-            
                 _context.Flights.Add(flight);
                 _context.SaveChanges();
                     return Created("", flight);
